@@ -32,9 +32,10 @@ function ()
       test('Given a feature string:',
            function() a_feature_string({context = ctx},
                                        table.concat({'Feature: Parse a feature name and description',
-                                                     'In order to...',
-                                                     'As a...',
-                                                     'I want to...'}, '\n'))
+                                                     '  In order to...',
+                                                     '  As a...',
+                                                     '  I want to...',
+                                                     ''}, '\n'))
            end)
       
       test('When I parse the feature string',
@@ -57,9 +58,58 @@ function ()
                                                     'I want to...'}, '\n'))
            end)
    end)
+
+   -- Scenario:
+  context("Parse a feature name, description, and scenario",
+  function()
+     test('Given a feature string:',
+          function() a_feature_string({context = ctx}, table.concat({'Feature: Meta-parse a feature',
+                                                                     '  ...',
+                                                                     '',
+                                                                     '  Scenario: Meta-scenario',
+                                                                     '    Given a Foo',
+                                                                     '    When I bar that foo',
+                                                                     '    I should see a foo\'d bar',
+                                                                     ''}, '\n'))
+          end)
+
+     test('When I parse the feature string',
+          function() i_parse_the_feature_string{context = ctx} end)
+
+     test('The attribute "name" should be "Meta-parse a feature"',
+          function()
+             the_attribute_should_be({context = ctx},
+                                     'name',
+                                     'Meta-parse a feature')
+          end)
+
+     test('And the attribute "description" should be "..."',
+          function()
+             the_attribute_should_be({context = ctx},
+                                     'description',
+                                     '...')
+          end)
+
+     test('And the scenarios list should have length 1',
+          function()
+             scenarios_list_should_have_length({context = ctx}, 1)
+          end)
+
+     test('And scenario 1 attribute "name" should be "Meta-scenario"',
+          function() scenario_attribute_should_be({context = ctx}, 1, 'name', 'Meta-scenario') end)
+
+     test('And scenario 1 should have these steps:',
+          function()
+             scenario_should_have_these_steps({context = ctx},
+                                              1,
+                                              {{step = 'Given a Foo'},
+                                               {step = 'When I bar that foo'},
+                                               {step = 'I should see a foo\'d bar'}})
+          end)
+  end)
 end)
 
--- Given a feature string "(.*)"
+-- a feature string "(.*)"
 function a_feature_string(step, str)
    step.context.feature_string = str
 end
@@ -78,7 +128,26 @@ function i_should_get_the_following_attributes(step)
    end
 end
 
--- The attribute "(.*)" should be "(.*)"
+-- the attribute "(.*)" should be "(.*)"
 function the_attribute_should_be(step, name, value)
    assert_equal(step.context.feature[name], value)
+end
+
+-- scenarios list should have length (.*)
+function scenarios_list_should_have_length(step, length)
+   assert_equal(#step.context.feature.scenarios, length)
+end
+
+-- scenario (.*) attribute "(.*)" should be "(.*)"
+function scenario_attribute_should_be(step, num, name, value)
+   assert_equal(step.context.feature.scenarios[num][name], value)
+end
+
+-- scenario (.*) should have these steps:
+function scenario_should_have_these_steps(step, num, steps)
+   vals = {}
+   for i, step in ipairs(steps) do
+      vals.insert(step.step)
+   end
+   assert_equal(step.content.feature.scenarios[num].steps, vals)
 end

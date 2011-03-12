@@ -26,3 +26,25 @@ Feature: Parse featuers
       As a...
       I want to...
       """
+
+  Scenario: Parse a feature name, description, and scenario
+    Given a feature string:
+      """
+      Feature: Meta-parse a feature
+        ...
+
+        Scenario: Meta-scenario
+          Given a Foo
+          When I bar that foo
+          I should see a foo'd bar
+      """
+    When I parse the feature string
+    The attribute "name" should be "Meta-parse a feature"
+    And the attribute "description" should be "..."
+    And the scenarios list should have length 1
+    And scenario 1 attribute "name" should be "Meta-scenario"
+    And scenario 1 should have these steps:
+      | step                     |
+      | Given a Foo              |
+      | When I bar that foo      |
+      | I should see a foo'd bar |
