@@ -144,10 +144,9 @@ function scenario_attribute_should_be(step, num, name, value)
 end
 
 -- scenario (.*) should have these steps:
-function scenario_should_have_these_steps(step, num, steps)
-   vals = {}
-   for i, step in ipairs(steps) do
-      vals.insert(step.step)
+function scenario_should_have_these_steps(step, num, expected_steps)
+   local actual_steps = step.context.feature.scenarios[num].steps
+   for i, step in ipairs(expected_steps) do
+      assert_equal(actual_steps[i], step.step)
    end
-   assert_equal(step.content.feature.scenarios[num].steps, vals)
 end

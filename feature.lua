@@ -14,10 +14,16 @@ end
 
 G = lpeg.Ct{
    "Feature",
-   Feature = P"Feature:" * space^0 * (lpeg.Cg((1 - newline)^1, 'name')) * (newline * V'Description')^-1,
+   Name = lpeg.Cg((1 - newline)^1, 'name'),
+   Feature = (P"Feature:" * space^0 * V'Name' * (newline * V'Description')^-1 *
+           lpeg.Cg(lpeg.Ct(V'Scenario'^0), 'scenarios')),
    Description = lpeg.Cg(lpeg.Ct(V'PlainLine'^1) / concat_lines,
                          'description'),
-   PlainLine = (space - newline)^0 * lpeg.Cg((1 - newline)^1) * newline
+   PlainLine = (space - newline)^0 * lpeg.Cg((1 - newline)^1) * newline,
+   Step = V'PlainLine',
+   Scenario = lpeg.Ct(
+      space^0 * "Scenario:" * space * V'Name' * newline *
+         lpeg.Cg(lpeg.Ct(V'PlainLine'^0), 'steps'))
 }
 
 function parse(feature_string)
