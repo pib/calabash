@@ -107,6 +107,46 @@ function ()
                                                {step = 'I should see a foo\'d bar'}})
           end)
   end)
+
+  -- Scenario:
+  context("Parse a feature and scenario with a table in the steps",
+  function()
+    test('Given a feature string:',
+         function() a_feature_string({context = ctx}, table.concat({'Feature: with table',
+                                                                    '  ...',
+                                                                    '',
+                                                                    '  Scenario: with table',
+                                                                    '    Given the table:',
+                                                                    '      | a | b |',
+                                                                    '      | 1 | 2 |',
+                                                                    '      | 3 | 4 |',
+                                                                    '      | 5 | 6 |',
+                                                                    ''}, '\n'))
+         end)
+
+    test('When I parse the feature string', 
+         function() i_parse_the_feature_string{context = ctx} end)
+
+    test('Then scenario 1, step 1, row 1, field "a" should be "1"',
+         function() scenario_step_row_field_should_be({context = ctx}, 1, 1, 1, 'a', '1') end)
+
+    test('Then scenario 1, step 1, row 1, field "b" should be "2"',
+         function() scenario_step_row_field_should_be({context = ctx}, 1, 1, 1, 'b', '2') end)
+
+    test('Then scenario 1, step 1, row 2, field "a" should be "3"',
+         function() scenario_step_row_field_should_be({context = ctx}, 1, 1, 2, 'a', '3') end)
+
+    test('Then scenario 1, step 1, row 2, field "b" should be "4"',
+         function() scenario_step_row_field_should_be({context = ctx}, 1, 1, 2, 'b', '4') end)
+
+    test('Then scenario 1, step 1, row 3, field "a" should be "5"',
+         function() scenario_step_row_field_should_be({context = ctx}, 1, 1, 3, 'a', '5') end)
+
+    test('Then scenario 1, step 1, row 3, field "b" should be "6"',
+         function() scenario_step_row_field_should_be({context = ctx}, 1, 1, 3, 'b', '6') end)
+
+  end)
+
 end)
 
 -- a feature string "(.*)"
@@ -147,6 +187,12 @@ end
 function scenario_should_have_these_steps(step, num, expected_steps)
    local actual_steps = step.context.feature.scenarios[num].steps
    for i, step in ipairs(expected_steps) do
-      assert_equal(actual_steps[i], step.step)
+      assert_equal(actual_steps[i].name, step.step)
    end
+end
+
+-- scenario (.*), step (.*), row (.*), field "(.*)" should be "(.*)"
+function scenario_step_row_field_should_be(step, scenario, step_n, row, field, expected_value)
+   local actual_value = step.context.feature.scenarios[scenario].steps[step_n].hashes[row][field]
+   assert_equal(actual_value, expected_value)
 end

@@ -48,3 +48,24 @@ Feature: Parse featuers
       | Given a Foo              |
       | When I bar that foo      |
       | I should see a foo'd bar |
+
+  Scenario: Parse a feature and scenario with a table in the steps
+    Given a feature string:
+      """
+      Feature: with table
+        ...
+
+        Scenario: with table
+          Given the table:
+            | a | b |
+            | 1 | 2 |
+            | 3 | 4 |
+            | 5 | 6 |
+      """
+    When I parse the feature string
+    Then scenario 1, step 1, row 1, field "a" should be "1"
+    And scenario 1, step 1, row 1, field "b" should be "2"
+    And scenario 1, step 1, row 2, field "a" should be "3"
+    And scenario 1, step 1, row 2, field "b" should be "4"
+    And scenario 1, step 1, row 3, field "a" should be "5"
+    And scenario 1, step 1, row 3, field "b" should be "6"
