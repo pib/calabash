@@ -37,7 +37,7 @@ function format_multiline(multi)
    for _, line in pairs(multi.lines) do
       table.insert(lines, lpeg.match(indent, line))
    end
-   return lines
+   return table.concat(lines, '\n')
 end
 
 G = Ct{
@@ -67,4 +67,42 @@ G = Ct{
 
 function parse(feature_string)
    return lpeg.match(G, feature_string)
+end
+
+function make_step(step, steps)
+   for patt, step in pairs(steps) do
+      local params = lpeg.match(patt, step.name)
+      if params then
+         table.insert(params, 1, step)
+         return function()
+                   -- TODO: Do this
+                end
+      end
+   end
+end
+
+function generate_context(filename, steps)
+   local feature_str = io.input(filename):read'*all'
+   local feature = parse(feature_str)
+
+   local contexts = {} -- telescope contexts generated
+   local ctx = {} -- internal context handed to each test
+   local current_scenario = 0
+
+   -- telescope context format:
+   --   for features: {context = true, name = "Feature name", parent = 0}
+   --   for scenarios: {context = true, name = "Scenario name", parent = 1}
+   --   for steps: {context_name = "Scenario name", name = "Step name", parent = parent_index, test = function...}
+   
+   table.insert(contexts, {context = true, name = feature.name, parent = 0})
+   for _, scenario in pairs(feature.scenarios) do
+      table.insert(contexts, {context = true, name = scenario.name, parent = 1})
+      current_scenario = #contexts
+      for _, step in pairs(scenario.steps) do
+         local step_fn = make_step(step, steps)
+         table.insert(contexts, {context_name = contexts[current_scenario].name,
+                                 name = step.name, parent = current_scenario, test = step_fn})
+      end
+   end
+   return contexts
 end

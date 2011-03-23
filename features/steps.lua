@@ -269,6 +269,6 @@ end
 
 -- scenario (.*), step (.*), multiline line (.*) should be "(.*)"
 function scenario_step_multiline_line_should_be(step, scenario, step_n, line_n, expected_value)
-   local lines = step.context.feature.scenarios[scenario].steps[step_n].multiline
+   local lines = split(step.context.feature.scenarios[scenario].steps[step_n].multiline, '\n')
    assert_equal(lines[line_n], expected_value)
 end
