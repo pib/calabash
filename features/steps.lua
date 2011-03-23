@@ -1,5 +1,6 @@
 require 'telescope'
 require 'feature'
+require 'lpeg'
 
 -- For bootstrapping, I'm embedding all the tests directly in here
 -- Just until I have .feature parsing done enough to parse them from there...
@@ -147,6 +148,68 @@ function ()
 
   end)
 
+  -- Scenario:
+  context("Parse a feature and scenario with double-quoted long strings",
+  function()
+     test('Given a feature string:',
+          function() a_feature_string({context = ctx}, table.concat({'Feature: with long string',
+                                                                     '  ...',
+                                                                     '',
+                                                                     '  Scenario: with long string',
+                                                                     '    Given the long string:',
+                                                                     '      """',
+                                                                     '      one',
+                                                                     '      two',
+                                                                     '      three',
+                                                                     '      """',
+                                                                     ''}, '\n'))
+          end)
+
+    test('When I parse the feature string', 
+         function() i_parse_the_feature_string{context = ctx} end)
+
+    test('Then scenario 1, step 1, multiline line 1 should be "one"',
+         function() scenario_step_multiline_line_should_be({context = ctx}, 1, 1, 1, "one") end)
+
+    test('Then scenario 1, step 1, multiline line 1 should be "two"',
+         function() scenario_step_multiline_line_should_be({context = ctx}, 1, 1, 2, "two") end)
+
+    test('Then scenario 1, step 1, multiline line 2 should be "three"',
+         function() scenario_step_multiline_line_should_be({context = ctx}, 1, 1, 3, "three") end)
+
+ end)
+
+  -- Scenario:
+  context("Parse a feature and scenario with double-quoted long strings",
+  function()
+     test('Given a feature string:',
+          function() a_feature_string({context = ctx}, table.concat({'Feature: with long string',
+                                                                     '  ...',
+                                                                     '',
+                                                                     '  Scenario: with long string',
+                                                                     '    Given the long string:',
+                                                                     "      '''",
+                                                                     '      one',
+                                                                     '       two',
+                                                                     '        three',
+                                                                     "      '''",
+                                                                     ''}, '\n'))
+          end)
+
+    test('When I parse the feature string', 
+         function() i_parse_the_feature_string{context = ctx} end)
+
+    test('Then scenario 1, step 1, multiline line 1 should be "one"',
+         function() scenario_step_multiline_line_should_be({context = ctx}, 1, 1, 1, "one") end)
+
+    test('Then scenario 1, step 1, multiline line 1 should be "two"',
+         function() scenario_step_multiline_line_should_be({context = ctx}, 1, 1, 2, " two") end)
+
+    test('Then scenario 1, step 1, multiline line 2 should be "three"',
+         function() scenario_step_multiline_line_should_be({context = ctx}, 1, 1, 3, "  three") end)
+
+ end)
+
 end)
 
 -- a feature string "(.*)"
@@ -195,4 +258,17 @@ end
 function scenario_step_row_field_should_be(step, scenario, step_n, row, field, expected_value)
    local actual_value = step.context.feature.scenarios[scenario].steps[step_n].hashes[row][field]
    assert_equal(actual_value, expected_value)
+end
+
+function split (s, sep)
+   sep = lpeg.P(sep)
+   local elem = lpeg.C((1 - sep)^0)
+   local p = lpeg.Ct(elem * (sep * elem)^0)
+   return lpeg.match(p, s)
+end
+
+-- scenario (.*), step (.*), multiline line (.*) should be "(.*)"
+function scenario_step_multiline_line_should_be(step, scenario, step_n, line_n, expected_value)
+   local lines = step.context.feature.scenarios[scenario].steps[step_n].multiline
+   assert_equal(lines[line_n], expected_value)
 end
