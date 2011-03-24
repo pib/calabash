@@ -31,12 +31,12 @@ function ()
    context("Parse a feature name and description",
    function()
       test('Given a feature string:',
-           function() a_feature_string({context = ctx},
-                                       table.concat({'Feature: Parse a feature name and description',
-                                                     '  In order to...',
-                                                     '  As a...',
-                                                     '  I want to...',
-                                                     ''}, '\n'))
+           function() a_multiline_feature_string({context = ctx, multiline = table.concat(
+                                           {'Feature: Parse a feature name and description',
+                                            '  In order to...',
+                                            '  As a...',
+                                            '  I want to...',
+                                            ''}, '\n')})
            end)
       
       test('When I parse the feature string',
@@ -64,14 +64,15 @@ function ()
   context("Parse a feature name, description, and scenario",
   function()
      test('Given a feature string:',
-          function() a_feature_string({context = ctx}, table.concat({'Feature: Meta-parse a feature',
-                                                                     '  ...',
-                                                                     '',
-                                                                     '  Scenario: Meta-scenario',
-                                                                     '    Given a Foo',
-                                                                     '    When I bar that foo',
-                                                                     '    I should see a foo\'d bar',
-                                                                     ''}, '\n'))
+          function() a_multiline_feature_string{context = ctx, multiline = table.concat(
+                                                   {'Feature: Meta-parse a feature',
+                                                    '  ...',
+                                                    '',
+                                                    '  Scenario: Meta-scenario',
+                                                    '    Given a Foo',
+                                                    '    When I bar that foo',
+                                                    '    I should see a foo\'d bar',
+                                                    ''}, '\n')}
           end)
 
      test('When I parse the feature string',
@@ -113,16 +114,17 @@ function ()
   context("Parse a feature and scenario with a table in the steps",
   function()
     test('Given a feature string:',
-         function() a_feature_string({context = ctx}, table.concat({'Feature: with table',
-                                                                    '  ...',
-                                                                    '',
-                                                                    '  Scenario: with table',
-                                                                    '    Given the table:',
-                                                                    '      | a | b |',
-                                                                    '      | 1 | 2 |',
-                                                                    '      | 3 | 4 |',
-                                                                    '      | 5 | 6 |',
-                                                                    ''}, '\n'))
+         function() a_multiline_feature_string({context = ctx, multiline = table.concat(
+                                                   {'Feature: with table',
+                                                    '  ...',
+                                                    '',
+                                                    '  Scenario: with table',
+                                                    '    Given the table:',
+                                                    '      | a | b |',
+                                                    '      | 1 | 2 |',
+                                                    '      | 3 | 4 |',
+                                                    '      | 5 | 6 |',
+                                                    ''}, '\n')})
          end)
 
     test('When I parse the feature string', 
@@ -152,17 +154,18 @@ function ()
   context("Parse a feature and scenario with double-quoted long strings",
   function()
      test('Given a feature string:',
-          function() a_feature_string({context = ctx}, table.concat({'Feature: with long string',
-                                                                     '  ...',
-                                                                     '',
-                                                                     '  Scenario: with long string',
-                                                                     '    Given the long string:',
-                                                                     '      """',
-                                                                     '      one',
-                                                                     '      two',
-                                                                     '      three',
-                                                                     '      """',
-                                                                     ''}, '\n'))
+          function() a_multiline_feature_string({context = ctx, multiline = table.concat(
+                                                    {'Feature: with long string',
+                                                     '  ...',
+                                                     '',
+                                                     '  Scenario: with long string',
+                                                     '    Given the long string:',
+                                                     '      """',
+                                                     '      one',
+                                                     '      two',
+                                                     '      three',
+                                                     '      """',
+                                                     ''}, '\n')})
           end)
 
     test('When I parse the feature string', 
@@ -183,17 +186,18 @@ function ()
   context("Parse a feature and scenario with double-quoted long strings",
   function()
      test('Given a feature string:',
-          function() a_feature_string({context = ctx}, table.concat({'Feature: with long string',
-                                                                     '  ...',
-                                                                     '',
-                                                                     '  Scenario: with long string',
-                                                                     '    Given the long string:',
-                                                                     "      '''",
-                                                                     '      one',
-                                                                     '       two',
-                                                                     '        three',
-                                                                     "      '''",
-                                                                     ''}, '\n'))
+          function() a_multiline_feature_string({context = ctx, multiline = table.concat(
+                                                    {'Feature: with long string',
+                                                     '  ...',
+                                                     '',
+                                                     '  Scenario: with long string',
+                                                     '    Given the long string:',
+                                                     "      '''",
+                                                     '      one',
+                                                     '       two',
+                                                     '        three',
+                                                     "      '''",
+                                                     ''}, '\n')})
           end)
 
     test('When I parse the feature string', 
@@ -215,6 +219,11 @@ end)
 -- a feature string "(.*)"
 function a_feature_string(step, str)
    step.context.feature_string = str
+end
+
+-- a feature string
+function a_multiline_feature_string(step)
+   step.context.feature_string = step.multiline
 end
 
 -- I parse the feature string
@@ -271,4 +280,145 @@ end
 function scenario_step_multiline_line_should_be(step, scenario, step_n, line_n, expected_value)
    local lines = split(step.context.feature.scenarios[scenario].steps[step_n].multiline, '\n')
    assert_equal(lines[line_n], expected_value)
+end
+
+-- Feature:
+context('Generate telescope contexts',
+function()
+   local ctx = {}
+
+   -- Scenario:
+   context('Match on a simple string',
+   function()
+      test('Given a step named "Hello there"',
+           function() a_step_named({context = ctx}, 'Hello there') end)
+
+      test('When I make a step with name "Hello there"',
+           function() make_a_step_with_name({context = ctx}, 'Given Hello there') end)
+
+      test('And I call that step',
+           function() call_step{context = ctx} end)
+
+      test('Then that step should be called with no parameters',
+           function() step_should_be_called_with_no_parameters{context = ctx} end)
+
+   end)
+
+   -- Scenario:
+   context('Match on a non-whitespace wildcard',
+   function()
+      test('Given a step named "Hello (.*) there"',
+           function() a_step_named({context = ctx}, 'Hello (.*) there') end)
+
+      test('When I make a step with name "Hello you there"',
+           function() make_a_step_with_name({context = ctx}, 'Hello you there') end)
+
+      test('And I call that step',
+           function() call_step{context = ctx} end)
+
+      test('Then that step should be called with the parameter "you"',
+           function() step_should_be_called_with_the_parameter({context = ctx}, 'you') end)
+
+   end)
+   
+   -- Scenario:
+   context('Match on multiple wildcards',
+   function()
+      test('Given a step named \'Hello "(.*)" over (.*)\'',
+           function() a_step_named({context = ctx}, 'Hello "(.*)" over (.*)') end)
+
+      test('When I make a step with name "Hello you there"',
+           function() make_a_step_with_name({context = ctx}, 'Hello "you people" over there') end)
+
+      test('And I call that step',
+           function() call_step{context = ctx} end)
+
+      test('Then that step should be called with these parameters:',
+           function() step_should_be_called_with_these_parameters({context = ctx,
+                                                                   hashes = {
+                                                                      {param = 'you people'},
+                                                                      {param = 'there'}
+                                                                }}) end)
+
+   end)
+
+   -- Scenario:
+   context('Telescope steps for a simple feature',
+   function()
+      test('Given a feature string',
+           function() a_multiline_feature_string{context = ctx, multiline = table.concat(
+                                                    {'Feature: context',
+                                                     '',
+                                                     '  Scenario: subcontext',
+                                                     '    Given a test',
+                                                     ''}, '\n')} end)
+
+      test('And a step named "a simple telescope test"',
+           function() a_step_named({context = ctx}, 'a test') end)
+
+      test('When I generate a telescope context',
+           function() i_generate_a_telescope_context({context = ctx}) end)
+
+      test('Then that context should have the following values:',
+           function() that_context_should_have_the_following_values(
+                 {context = ctx, hashtable =
+                  {{context = 'true', context_name = '', name = 'context', parent = '0'},
+                   {context = 'true', context_name = '', name = 'subcontext', parent = '1'},
+                   {context = '', context_name = 'subcontext', name='Given a test', parent = '2'}}}) end)
+   end)
+
+end)
+
+-- a step named
+function a_step_named(step, name)
+   step.context.steps = step.context.steps or {}
+   step.context.steps[feature.make_step_pattern(name)] = function(step_, ...)
+                                                            step.context.step_params = {...}
+                                                         end
+end
+
+-- make a step with name "(.*)"
+function make_a_step_with_name(step, name)
+   step.context.created_step = feature.make_step({name = name}, step.context.steps)
+end
+
+-- call that step
+function call_step(step)
+   step.context.created_step()
+end
+
+-- step should be called with no parameters
+function step_should_be_called_with_no_parameters(step)
+   assert_equal(#step.context.step_params, 0)
+end
+
+-- step should be called with the parameter "(.*)"
+function step_should_be_called_with_the_parameter(step, param)
+   assert_equal(#step.context.step_params, 1)
+   assert_equal(step.context.step_params[1], param)
+end
+
+-- step should be called with these parameters:
+function step_should_be_called_with_these_parameters(step)
+   for i, hash in pairs(step.hashes) do
+      assert_equal(step.context.step_params[i], hash.param)
+   end
+end
+
+-- generate a telescope context
+function i_generate_a_telescope_context(step)
+   step.context.telescope_context = feature.generate_context(step.context.feature_string,
+                                                             step.context.steps)
+end
+
+-- context should have the following values:
+function that_context_should_have_the_following_values(step)
+   for i, context in pairs(step.context.telescope_context) do
+      local expected = step.hashtable[i]
+      for key, value in pairs(context) do
+         if key ~= 'test' then
+            assert_equal(tostring(value), expected[key])
+         end
+      end
+   end
 end

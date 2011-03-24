@@ -1,6 +1,10 @@
 local lpeg = require 'lpeg'
+
+local error = error
 local table = table
 local pairs = pairs
+local unpack = unpack
+local print = print
 
 module(...)
 
@@ -69,20 +73,60 @@ function parse(feature_string)
    return lpeg.match(G, feature_string)
 end
 
+wildcard = P'(.*)' + '"(.*)"' + "'(.*)'"
+non_wildcard = (1 - wildcard)^1
+step = Ct(C(non_wildcard + wildcard)^1)
+
+wildcard_nospace = C((1 - space)^1)
+wildcard_single_q = P"'" * C((P"\\'" + (1 - P"'"))^0) * "'"
+wildcard_double_q = P'"' * C((P'\\"' + (1 - P'"'))^0) * '"'
+
+function make_step_pattern(name)
+      local parts = lpeg.match(step, name)
+      local patt = P''
+      for _, part in pairs(parts) do
+         if part == '(.*)' then
+            patt = patt * wildcard_nospace
+         elseif part == '"(.*)"' then
+            patt = patt * wildcard_double_q
+         elseif part == "'(.*)'" then
+            patt = patt * wildcard_single_q
+         else
+            patt = patt * P(part)
+         end
+      end
+      return Ct((1 - patt)^0 * patt)
+end
+
+function load_steps(path)
+   local env = getfenv()
+   local steps = {}
+   local function step(name, fn)
+      local patt = make_step_pattern(name)
+      steps[patt] = fn
+   end
+
+   env.setmetatable(env, {__index = _G})
+   env.step = step
+   local func, err = assert(loadfile(path))
+   if err then error(err) end
+   setfenv(func, env)()
+   
+   return steps
+end
+
 function make_step(step, steps)
-   for patt, step in pairs(steps) do
+   for patt, step_fn in pairs(steps) do
       local params = lpeg.match(patt, step.name)
       if params then
          table.insert(params, 1, step)
-         return function()
-                   -- TODO: Do this
-                end
+         return function() step_fn(unpack(params)) end
       end
    end
+   error('No matching step definition for "' .. step.name .. '"!')
 end
 
-function generate_context(filename, steps)
-   local feature_str = io.input(filename):read'*all'
+function generate_context(feature_str, steps)
    local feature = parse(feature_str)
 
    local contexts = {} -- telescope contexts generated
@@ -99,6 +143,7 @@ function generate_context(filename, steps)
       table.insert(contexts, {context = true, name = scenario.name, parent = 1})
       current_scenario = #contexts
       for _, step in pairs(scenario.steps) do
+         step.context = ctx
          local step_fn = make_step(step, steps)
          table.insert(contexts, {context_name = contexts[current_scenario].name,
                                  name = step.name, parent = current_scenario, test = step_fn})
