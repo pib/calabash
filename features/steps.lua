@@ -1,4 +1,4 @@
-require 'feature'
+require 'calabash'
 require 'lpeg'
 
 step('a feature string "(.*)"',
@@ -13,7 +13,7 @@ end)
 
 step('parse the feature string',
 function(step)
-   step.context.feature = feature.parse(step.context.feature_string)
+   step.context.feature = calabash.parse(step.context.feature_string)
 end)
 
 step('I should get the following attributes:',
@@ -76,15 +76,15 @@ end)
 
 function a_step_named(step, name)
    step.context.steps = step.context.steps or {}
-   step.context.steps[feature.make_step_pattern(name)] = function(step_, ...)
-                                                            step.context.step_params = {...}
-                                                         end
+   step.context.steps[calabash.make_step_pattern(name)] = function(step_, ...)
+                                                             step.context.step_params = {...}
+                                                          end
 end
 step('a step named "(.*)"', a_step_named)
 step("a step named '(.*)'", a_step_named)
 
 function make_a_step_with_name(step, name)
-   step.context.created_step = feature.make_step({name = name}, step.context.steps)
+   step.context.created_step = calabash.make_step({name = name}, step.context.steps)
 end
 step('make a step with name "(.*)"', make_a_step_with_name)
 step("make a step with name '(.*)'", make_a_step_with_name)
@@ -114,8 +114,8 @@ end)
 
 step('generate a telescope context',
 function(step)
-   step.context.telescope_context = feature.generate_contexts(step.context.feature_string,
-                                                      step.context.steps)
+   step.context.telescope_context = calabash.generate_contexts(step.context.feature_string,
+                                                              step.context.steps)
 end)
 
 step('context should have the following values:',

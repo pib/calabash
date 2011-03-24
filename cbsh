@@ -1,14 +1,20 @@
+#!/usr/bin/env lua
+package.path = './?.lua;' .. package.path
+pcall(require, 'luarocks.require')
 require 'telescope'
-require 'feature'
+require 'calabash'
+require 'lfs'
 
-local steps = feature.load_steps('features/steps.lua')
+local steps = calabash.load_steps('features/steps.lua')
 
 
 local contexts = {}
-local feature_str = io.open('features/generator.feature'):read('*all')
-feature.generate_contexts(feature_str, steps, contexts)
-feature_str = io.open('features/parser.feature'):read('*all')
-feature.generate_contexts(feature_str, steps, contexts)
+for filename in lfs.dir('features') do
+   if string.match(filename, '.*%.feature') then
+      local feature_str = io.open('features/' .. filename):read('*all')
+      calabash.generate_contexts(feature_str, steps, contexts)
+   end
+end
 
 local buffer = {}
 local results = telescope.run(contexts, callbacks, test_pattern)
