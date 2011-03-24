@@ -26,7 +26,7 @@ verbose output.
 
 The MIT License
 
-Copyright (c) 2009-2010 [Norman Clarke](mailto:norman@njclarke.com)
+Copyright (c) 2011 [Paul Bonser](mailto:misterpib@gmail.com)
 
 Permission is hereby granted, free of charge, to any person obtaining a copy of
 this software and associated documentation files (the "Software"), to deal in
