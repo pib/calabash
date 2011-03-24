@@ -1,12 +1,8 @@
 local lpeg = require 'lpeg'
-
-local error = error
-local table = table
-local pairs = pairs
 local unpack = unpack
-local print = print
+local telescope = require 'telescope'
 
-module(...)
+module(..., package.seeall)
 
 local locale = lpeg.locale()
 local C, Cb, Cg, Ct, P, S, V = lpeg.C, lpeg.Cb, lpeg.Cg, lpeg.Ct, lpeg.P, lpeg.P, lpeg.V
@@ -53,7 +49,7 @@ G = Ct{
                          'description'),
    PlainLine = i_space * Cg((1 - newline - '|' - '"""' - "'''") * (1 - newline)^1) * newline,
 
-   HashValue = Cg((non_space - '|') * (i_space * (non_space - '|'))^0),
+   HashValue = Cg(((non_space - '|') * (i_space * (non_space - '|'))^0)^0),
    HashtableLine = Ct(i_space * P'|' * (i_space * V'HashValue' * i_space * '|')^1 * i_space * newline),
    Hashtable = Ct(V'HashtableLine'^1) / format_hash,
 
@@ -75,14 +71,14 @@ end
 
 wildcard = P'(.*)' + '"(.*)"' + "'(.*)'"
 non_wildcard = (1 - wildcard)^1
-step = Ct(C(non_wildcard + wildcard)^1)
+step_patt = Ct(C(non_wildcard + wildcard)^1)
 
 wildcard_nospace = C((1 - space)^1)
 wildcard_single_q = P"'" * C((P"\\'" + (1 - P"'"))^0) * "'"
 wildcard_double_q = P'"' * C((P'\\"' + (1 - P'"'))^0) * '"'
 
 function make_step_pattern(name)
-      local parts = lpeg.match(step, name)
+      local parts = lpeg.match(step_patt, name)
       local patt = P''
       for _, part in pairs(parts) do
          if part == '(.*)' then
@@ -106,7 +102,13 @@ function load_steps(path)
       steps[patt] = fn
    end
 
-   env.setmetatable(env, {__index = _G})
+   for k, v in pairs(telescope.assertions) do
+      setfenv(v, env)
+      env[k] = v
+   end
+
+
+   setmetatable(env, {__index = _G})
    env.step = step
    local func, err = assert(loadfile(path))
    if err then error(err) end
@@ -126,10 +128,10 @@ function make_step(step, steps)
    error('No matching step definition for "' .. step.name .. '"!')
 end
 
-function generate_context(feature_str, steps)
+function generate_context(feature_str, steps, contexts)
    local feature = parse(feature_str)
 
-   local contexts = {} -- telescope contexts generated
+   contexts = contexts or {} -- telescope contexts generated
    local ctx = {} -- internal context handed to each test
    local current_scenario = 0
 

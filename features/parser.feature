@@ -60,7 +60,7 @@ Feature: Parse featuers
             | a | b |
             | 1 | 2 |
             | 3 | 4 |
-            | 5 | 6 |
+            | 5 |   |
       """
     When I parse the feature string
     Then scenario 1, step 1, row 1, field "a" should be "1"
@@ -68,7 +68,7 @@ Feature: Parse featuers
     And scenario 1, step 1, row 2, field "a" should be "3"
     And scenario 1, step 1, row 2, field "b" should be "4"
     And scenario 1, step 1, row 3, field "a" should be "5"
-    And scenario 1, step 1, row 3, field "b" should be "6"
+    And scenario 1, step 1, row 3, field "b" should be ""
 
   Scenario: Parse a feature and scenario with double-quoted long strings
     Given a feature string:
