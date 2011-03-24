@@ -1,7 +1,8 @@
 package = 'calabash'
 version = '0.1.0-1'
 source = {
-   url = 'http://github.com/pib/calabash/tarball/0.1.0'
+   url = 'http://github.com/pib/calabash/tarball/0.1.0',
+   md5 = 'c468337344a16bfb0a2cdcdf84dc7ae9'
 }
 description = {
    summary = 'A cucumber-like BDD library on top of telescope.',
