@@ -17,10 +17,11 @@ Feature: Parse featuers
         In order to...
         As a...
         I want to...
+
       """
     When I parse the feature string
-    The attribute "name" should be "Parse a feature name and description"
-    And the attribute "description" should be:
+    The feature attribute "name" should be "Parse a feature name and description"
+    And the feature attribute "description" should be:
       """
       In order to...
       As a...
@@ -39,8 +40,8 @@ Feature: Parse featuers
           I should see a foo'd bar
       """
     When I parse the feature string
-    The attribute "name" should be "Meta-parse a feature"
-    And the attribute "description" should be "..."
+    The feature attribute "name" should be "Meta-parse a feature"
+    And the feature attribute "description" should be "..."
     And the scenarios list should have length 1
     And scenario 1 attribute "name" should be "Meta-scenario"
     And scenario 1 should have these steps:
@@ -63,12 +64,12 @@ Feature: Parse featuers
             | 5 |   |
       """
     When I parse the feature string
-    Then scenario 1, step 1, row 1, field "a" should be "1"
-    And scenario 1, step 1, row 1, field "b" should be "2"
-    And scenario 1, step 1, row 2, field "a" should be "3"
-    And scenario 1, step 1, row 2, field "b" should be "4"
-    And scenario 1, step 1, row 3, field "a" should be "5"
-    And scenario 1, step 1, row 3, field "b" should be ""
+    Then scenario 1 step 1 row 1 field "a" should be "1"
+    And scenario 1 step 1 row 1 field "b" should be "2"
+    And scenario 1 step 1 row 2 field "a" should be "3"
+    And scenario 1 step 1 row 2 field "b" should be "4"
+    And scenario 1 step 1 row 3 field "a" should be "5"
+    And scenario 1 step 1 row 3 field "b" should be ""
 
   Scenario: Parse a feature and scenario with double-quoted long strings
     Given a feature string:
@@ -85,9 +86,9 @@ Feature: Parse featuers
             """
       '''
     When I parse the feature string
-    Then scenario 1, step 1 multiline line 1 should be "one"
-    And scenario 1, step 1 multiline line 2 should be "two"
-    And scenario 1, step 1 multiline line 3 should be "three"
+    Then scenario 1 step 1 multiline line 1 should be "one"
+    And scenario 1 step 1 multiline line 2 should be " two"
+    And scenario 1 step 1 multiline line 3 should be "  three"
 
   Scenario: Parse a feature and scenario with single-quoted long strings
     Given a feature string:
@@ -104,6 +105,6 @@ Feature: Parse featuers
             '''
       """
     When I parse the feature string
-    Then scenario 1, step 1 multiline line 1 should be "one"
-    And scenario 1, step 1 multiline line 2 should be "two"
-    And scenario 1, step 1 multiline line 3 should be "three"
+    Then scenario 1 step 1 multiline line 1 should be "four"
+    And scenario 1 step 1 multiline line 2 should be "five"
+    And scenario 1 step 1 multiline line 3 should be "six"

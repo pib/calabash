@@ -25,7 +25,7 @@ Feature: Generate telescope contexts
       | there      |
 
   Scenario: Telescope steps for a simple feature
-    Given a feature string
+    Given a feature string:
       """
       Feature: context
       

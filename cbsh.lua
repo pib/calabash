@@ -3,8 +3,12 @@ require 'feature'
 
 local steps = feature.load_steps('features/steps.lua')
 
+
+local contexts = {}
 local feature_str = io.open('features/generator.feature'):read('*all')
-local contexts = feature.generate_context(feature_str, steps)
+feature.generate_contexts(feature_str, steps, contexts)
+feature_str = io.open('features/parser.feature'):read('*all')
+feature.generate_contexts(feature_str, steps, contexts)
 
 local buffer = {}
 local results = telescope.run(contexts, callbacks, test_pattern)

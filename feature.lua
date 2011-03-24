@@ -1,6 +1,7 @@
 local lpeg = require 'lpeg'
 local unpack = unpack
 local telescope = require 'telescope'
+local _G = _G
 
 module(..., package.seeall)
 
@@ -12,9 +13,9 @@ local newline = S"\n" + S"\r\n"
 local i_space = (space - newline)^0 -- ignored space
 local non_space = (1 - space)^1 -- group of at least one non-space character
 
-function concat_lines(...) return table.concat(..., '\n') end
+local function concat_lines(...) return table.concat(..., '\n') end
 
-function format_hash(rows)
+local function format_hash(rows)
    local hashes = {}
    local keys
    for i, values in pairs(rows) do
@@ -66,16 +67,16 @@ G = Ct{
 }
 
 function parse(feature_string)
-   return lpeg.match(G, feature_string)
+   return lpeg.match(G, feature_string .. '\n')
 end
 
-wildcard = P'(.*)' + '"(.*)"' + "'(.*)'"
-non_wildcard = (1 - wildcard)^1
-step_patt = Ct(C(non_wildcard + wildcard)^1)
+local wildcard = P'(.*)' + '"(.*)"' + "'(.*)'"
+local non_wildcard = (1 - wildcard)^1
+local step_patt = Ct(C(non_wildcard + wildcard)^1)
 
-wildcard_nospace = C((1 - space)^1)
-wildcard_single_q = P"'" * C((P"\\'" + (1 - P"'"))^0) * "'"
-wildcard_double_q = P'"' * C((P'\\"' + (1 - P'"'))^0) * '"'
+local wildcard_nospace = C((1 - space)^1)
+local wildcard_single_q = P"'" * C((P"\\'" + (1 - P"'"))^0) * "'"
+local wildcard_double_q = P'"' * C((P'\\"' + (1 - P'"'))^0) * '"'
 
 function make_step_pattern(name)
       local parts = lpeg.match(step_patt, name)
@@ -97,18 +98,18 @@ end
 function load_steps(path)
    local env = getfenv()
    local steps = {}
-   local function step(name, fn)
-      local patt = make_step_pattern(name)
-      steps[patt] = fn
-   end
 
    for k, v in pairs(telescope.assertions) do
       setfenv(v, env)
       env[k] = v
    end
-
-
    setmetatable(env, {__index = _G})
+
+   local function step(name, fn)
+      local patt = make_step_pattern(name)
+      steps[patt] = fn
+   end
+
    env.step = step
    local func, err = assert(loadfile(path))
    if err then error(err) end
@@ -128,7 +129,7 @@ function make_step(step, steps)
    error('No matching step definition for "' .. step.name .. '"!')
 end
 
-function generate_context(feature_str, steps, contexts)
+function generate_contexts(feature_str, steps, contexts)
    local feature = parse(feature_str)
 
    contexts = contexts or {} -- telescope contexts generated
