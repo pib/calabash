@@ -1,4 +1,4 @@
-Feature: Parse featuers
+Feature: Parse features
   In order to test features
   As a test framework author
   I need to parse features
@@ -108,3 +108,56 @@ Feature: Parse featuers
     Then scenario 1 step 1 multiline line 1 should be "four"
     And scenario 1 step 1 multiline line 2 should be "five"
     And scenario 1 step 1 multiline line 3 should be "six"
+
+  Scenario: Parse single tags in features
+    Given a feature string:
+      """
+      @tag1
+      Feature: tags
+      """
+    When I parse the feature string
+    Then the feature should have the tags:
+      | tag  |
+      | tag1 |
+
+  Scenario: Parse multiple tags in features
+    Given a feature string:
+      """
+      @tag1 @tag2
+      @tag3
+      @tag4 @tag5
+      Feature: tags
+      """
+    When I parse the feature string
+    Then the feature should have the tags:
+      | tag  |
+      | tag1 |
+      | tag2 |
+      | tag3 |
+      | tag4 |
+      | tag5 |
+
+  Scenario: Parse tags in scenarios
+    Given a feature string:
+      """
+      Feature: tags in scenarios
+
+        @tagA @tagB @tagC
+        @tagD
+        Scenario: I gots tags!
+          Step 1
+          Step 2
+          Step 3
+      """
+    When I parse the feature string
+    Then scenario 1 should have the tags:
+      | tag  |
+      | tagA |
+      | tagB |
+      | tagC |
+      | tagD |
+    And scenario 1 should have these steps:
+      | step   |
+      | Step 1 |
+      | Step 2 |
+      | Step 3 |
