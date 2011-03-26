@@ -43,8 +43,10 @@ end
 
 G = Ct{
    "Feature",
+   Tag = space^0 * '@' * C((1 - space)^1) * space^1,
+   Tags = Cg(Ct(V'Tag'^0), 'tags'),
    Name = Cg((1 - newline)^1, 'name'),
-   Feature = (P"Feature:" * space^0 * V'Name' * (newline * V'Description')^-1 *
+   Feature = V'Tags' * (P"Feature:" * space^0 * V'Name' * (newline * V'Description')^-1 *
            Cg(Ct(V'Scenario'^0), 'scenarios')),
    Description = Cg(Ct(V'PlainLine'^1) / concat_lines,
                          'description'),
@@ -62,6 +64,7 @@ G = Ct{
 
    Step = Ct(Cg(V'PlainLine', 'name') * Cg(V'Hashtable', 'hashes')^0 * Cg(V'Multiline', 'multiline')^0),
    Scenario = Ct(
+      V'Tags' *
       space^0 * "Scenario:" * space * V'Name' * newline *
          Cg(Ct(V'Step'^0), 'steps'))
 }

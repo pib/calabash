@@ -130,3 +130,17 @@ function(step)
    end
 end)
 
+step('feature should have the tags:',
+function(step)
+   for i, tag in pairs(step.hashes) do
+      assert_equal(step.context.feature.tags[i], tag.tag)
+   end
+end)
+
+step('scenario (.*) should have the tags:',
+function(step, scenario)
+   local tags = step.context.feature.scenarios[tonumber(scenario)].tags
+   for i, tag in pairs(step.hashes) do
+      assert_equal(tags[i], tag.tag)
+   end
+end)
